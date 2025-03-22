@@ -9,7 +9,7 @@ public class MainWindow extends JFrame {
     private final String email;
     private final int rollNo;
     private final String userName;
-    private final String subject = "Java"; // You can modify this dynamically
+    private final String subject = "Java";
 
     private int currentQuestion = 0;
     private int score = 0;
@@ -31,7 +31,7 @@ public class MainWindow extends JFrame {
     }
 
     private void initializeUI() {
-        setTitle("Java Flash Cards");
+        setTitle("Quiz Exam");
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
