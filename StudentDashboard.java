@@ -10,7 +10,7 @@ public class StudentDashboard extends JFrame implements ActionListener {
     private int rollNo;
     private String userName;
 
-    private JButton takeQuizButton, logoutButton;
+    private JButton takeQuizButton, logoutButton, category;
 
     public StudentDashboard(String email, int rollNo, String userName) {
         this.email = email;
@@ -21,7 +21,6 @@ public class StudentDashboard extends JFrame implements ActionListener {
 
     private void createUI() {
         setTitle("Student Dashboard - " + email);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);  // Maximize window
 
 
@@ -40,12 +39,15 @@ public class StudentDashboard extends JFrame implements ActionListener {
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
 
         takeQuizButton = new JButton("Take Quiz");
+        category = new JButton("Categories");
         logoutButton = new JButton("Logout");
 
         styleButton(takeQuizButton, new Color(67, 133, 244));
+        styleButton(category, new Color(23, 231, 45));
         styleButton(logoutButton, new Color(234, 67, 53));
 
         buttonPanel.add(takeQuizButton);
+        buttonPanel.add(category);
         buttonPanel.add(logoutButton);
 
         // Add components to content panel
@@ -60,6 +62,7 @@ public class StudentDashboard extends JFrame implements ActionListener {
 
         // Add action listeners
         takeQuizButton.addActionListener(this);
+        category.addActionListener(this);
         logoutButton.addActionListener(this);
 
         add(mainPane);
@@ -78,10 +81,23 @@ public class StudentDashboard extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == takeQuizButton) {
-            dispose();
-            List<Question> questions = DataFetcher.fetchQuestions();
-            new MainWindow(questions, email, rollNo, userName).setVisible(true);
+            Categories cat = new Categories();
+            String answer = JOptionPane.showInputDialog(null, "Enter the Category id ");
+            int categoryID = Integer.parseInt(answer.trim());
+            cat.dispose();
+            if ((categoryID == 0) || categoryID > 8 && categoryID < 33){
+                String subject = cat.name(categoryID);
+                cat.dispose();
+                dispose();
+                List<Question> questions = DataFetcher.fetchQuestions(categoryID);
+                new MainWindow(questions, email, rollNo, userName, subject).setVisible(true);
+            }else{
+                JOptionPane.showMessageDialog(this, "Inavalid number");
+            }
 
+
+        }else if(e.getSource() == category){
+            new Categories();
         }else if (e.getSource() == logoutButton) {
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Are you sure you want to logout?", "Logout", JOptionPane.YES_NO_OPTION);
@@ -95,8 +111,8 @@ public class StudentDashboard extends JFrame implements ActionListener {
     @Override
     protected void processWindowEvent(WindowEvent e) {
         if (e.getID() == WindowEvent.WINDOW_CLOSING) {
+            new Start();
             dispose();
-            new Start().setVisible(true);
         }
         super.processWindowEvent(e);
     }
