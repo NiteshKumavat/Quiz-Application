@@ -1,42 +1,62 @@
-import org.json.JSONArray;
-import org.json.JSONObject;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.sql.*;
 
-public class DataFetcher {
-    public static List<Question> fetchQuestions(int id) {
-        List<Question> questions = new ArrayList<>();
-        try {
-            URL url = new URL("https://opentdb.com/api.php?amount=10&category="+id+"&difficulty=medium&type=multiple");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
+public class PerformanceWindow extends JFrame {
+    private static final String url = "jdbc:mysql://localhost:3306/EXAMS";
+    private static final String username = "root";
+    private static final String dbPassword = "admin123";
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            reader.close();
+    String[] columns = {"Name", "E-mail", "Roll No", "Subject", "Score"};
+    JTable table;
+    DefaultTableModel model;
 
-            JSONObject json = new JSONObject(response.toString());
-            JSONArray results = json.getJSONArray("results");
-            
-            for (int i = 0; i < results.length(); i++) {
-                JSONObject q = results.getJSONObject(i);
-                questions.add(new Question(
-                    q.getString("question"),
-                    q.getString("correct_answer"),
-                    q.getJSONArray("incorrect_answers")
-                ));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return questions;
+    public PerformanceWindow() {
+        this.setTitle("Student's Performance");
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        this.setLocationRelativeTo(null);
+
+        model = new DefaultTableModel(columns, 0);
+        table = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        this.add(scrollPane, BorderLayout.CENTER);
+        databaseData();
+        this.setVisible(true);
     }
+
+    void databaseData() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection connection = DriverManager.getConnection(url, username, dbPassword);
+
+            String query = "SELECT * FROM performance";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            ResultSet resultSet = stmt.executeQuery();
+
+            while (resultSet.next()) {
+                String name = resultSet.getString("name");
+                String email = resultSet.getString("email");
+                String rollNo = resultSet.getString("roll_no");
+                String subject = resultSet.getString("subject");
+                int score = resultSet.getInt("score");
+
+                model.addRow(new Object[]{name, email, rollNo, subject, score + "/" + 10});
+                table.setRowHeight(50);
+                table.setFont(new Font("Arial", Font.PLAIN, 20));
+            }
+
+            resultSet.close();
+            stmt.close();
+            connection.close();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Database Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(this, "MySQL Driver not found!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
 }
