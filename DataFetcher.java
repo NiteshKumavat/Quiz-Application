@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataFetcher {
-    public static List<Question> fetchQuestions() {
+    public static List<Question> fetchQuestions(int id) {
         List<Question> questions = new ArrayList<>();
         try {
-            URL url = new URL("https://opentdb.com/api.php?amount=10&type=multiple");
+            URL url = new URL("https://opentdb.com/api.php?amount=10&category="+id+"&difficulty=medium&type=multiple");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 
